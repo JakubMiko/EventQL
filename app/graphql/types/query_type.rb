@@ -27,5 +27,8 @@ module Types
     def test_field
       "Hello World!"
     end
+
+    # Public user profile query (no authentication required)
+    field :public_user, resolver: Queries::Users::PublicUser
   end
 end
