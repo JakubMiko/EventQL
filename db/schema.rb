@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_11_154621) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_11_154655) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -22,6 +22,16 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_11_154621) do
     t.string "location"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "ticket_batches", force: :cascade do |t|
+    t.bigint "event_id", null: false
+    t.decimal "price"
+    t.integer "total_quantity"
+    t.integer "available_quantity"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["event_id"], name: "index_ticket_batches_on_event_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -37,4 +47,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_11_154621) do
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
+
+  add_foreign_key "ticket_batches", "events"
 end
