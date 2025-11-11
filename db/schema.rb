@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_11_154810) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_11_183431) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -43,11 +43,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_11_154810) do
   end
 
   create_table "events", force: :cascade do |t|
-    t.string "title"
+    t.string "name"
     t.text "description"
     t.datetime "date"
     t.string "category"
-    t.string "location"
+    t.string "place"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
@@ -57,7 +57,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_11_154810) do
     t.bigint "ticket_batch_id", null: false
     t.integer "quantity"
     t.decimal "total_price"
-    t.string "status"
+    t.string "status", default: "pending", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["ticket_batch_id"], name: "index_orders_on_ticket_batch_id"
@@ -67,10 +67,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_11_154810) do
   create_table "ticket_batches", force: :cascade do |t|
     t.bigint "event_id", null: false
     t.decimal "price"
-    t.integer "total_quantity"
-    t.integer "available_quantity"
+    t.integer "available_tickets"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "sale_start"
+    t.datetime "sale_end"
     t.index ["event_id"], name: "index_ticket_batches_on_event_id"
   end
 
@@ -97,6 +98,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_11_154810) do
     t.datetime "updated_at", null: false
     t.string "first_name"
     t.string "last_name"
+    t.boolean "admin", default: false, null: false
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
