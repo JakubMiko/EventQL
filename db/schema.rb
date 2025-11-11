@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_11_154655) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_11_154737) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -24,6 +24,18 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_11_154655) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "orders", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "ticket_batch_id", null: false
+    t.integer "quantity"
+    t.decimal "total_price"
+    t.string "status"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["ticket_batch_id"], name: "index_orders_on_ticket_batch_id"
+    t.index ["user_id"], name: "index_orders_on_user_id"
+  end
+
   create_table "ticket_batches", force: :cascade do |t|
     t.bigint "event_id", null: false
     t.decimal "price"
@@ -32,6 +44,19 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_11_154655) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["event_id"], name: "index_ticket_batches_on_event_id"
+  end
+
+  create_table "tickets", force: :cascade do |t|
+    t.bigint "order_id", null: false
+    t.bigint "user_id", null: false
+    t.bigint "event_id", null: false
+    t.string "ticket_number"
+    t.decimal "price"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["event_id"], name: "index_tickets_on_event_id"
+    t.index ["order_id"], name: "index_tickets_on_order_id"
+    t.index ["user_id"], name: "index_tickets_on_user_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -48,5 +73,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_11_154655) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  add_foreign_key "orders", "ticket_batches"
+  add_foreign_key "orders", "users"
   add_foreign_key "ticket_batches", "events"
+  add_foreign_key "tickets", "events"
+  add_foreign_key "tickets", "orders"
+  add_foreign_key "tickets", "users"
 end
