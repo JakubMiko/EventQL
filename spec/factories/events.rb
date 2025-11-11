@@ -1,9 +1,17 @@
 FactoryBot.define do
   factory :event do
-    title { "MyString" }
-    description { "MyText" }
-    date { "2025-11-11 16:46:22" }
-    category { "MyString" }
-    location { "MyString" }
+    name { "Sample Event" }
+    description { "Sample description" }
+    place { "Sample Place" }
+    category { "music" }
+    date { DateTime.now + 5.days }
+  end
+
+  trait :upcoming do
+    date { DateTime.now + 5.days }
+  end
+
+  trait :past do
+    date { DateTime.now - 5.days }
   end
 end

@@ -1,9 +1,9 @@
 FactoryBot.define do
   factory :order do
-    user { nil }
-    ticket_batch { nil }
-    quantity { 1 }
-    total_price { "9.99" }
-    status { "MyString" }
+    user
+    ticket_batch
+    quantity { 2 }
+    total_price { 100.0 }
+    status { "pending" }
   end
 end
