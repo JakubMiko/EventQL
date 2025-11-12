@@ -13,8 +13,27 @@ module Events
       result = Events::CreateContract.new.call(params)
       return Failure(format_errors(result.errors)) unless result.success?
 
-      # Create event
-      event = Event.new(result.to_h)
+      validated_params = result.to_h
+
+      # Extract image fields (these are NOT database columns, just GraphQL input)
+      # We must remove them before creating the Event, otherwise ActiveRecord
+      # will error with "unknown attribute 'image_data' for Event"
+      # Note: Try both string and symbol keys since the source might vary
+      image_data = validated_params.delete("image_data") || validated_params.delete(:image_data)
+      image_filename = validated_params.delete("image_filename") || validated_params.delete(:image_filename)
+
+      # Create event with only database columns
+      event = Event.new(validated_params)
+
+      if image_data.present?
+        attachment_result = ImageAttachmentService.call(
+          record: event,
+          attachment_name: :image,
+          image_data: image_data,
+          filename: image_filename
+        )
+        return attachment_result if attachment_result.failure?
+      end
 
       if event.save
         Success(event)

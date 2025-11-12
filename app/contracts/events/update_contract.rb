@@ -8,12 +8,12 @@ module Events
       optional(:place).filled(:string)
       optional(:category).filled(:string)
       optional(:date).filled
-      optional(:image)
+      optional(:image_data).filled(:string)
+      optional(:image_filename).filled(:string)
     end
 
     rule(:date) do
       if value
-        # Convert to Time if it's a string
         time_value = value.is_a?(String) ? Time.parse(value) : value
         key.failure("must be in the future") if time_value && time_value < Time.current
       end

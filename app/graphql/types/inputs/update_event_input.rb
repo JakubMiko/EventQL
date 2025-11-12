@@ -10,7 +10,8 @@ module Types
       argument :place, String, required: false, description: "Event location/venue"
       argument :date, GraphQL::Types::ISO8601DateTime, required: false, description: "Event date and time"
       argument :category, String, required: false, description: "Event category (music, theater, sports, comedy, conference, festival, exhibition, other)"
-      argument :image, String, required: false, description: "Base64 encoded image data"
+      argument :image_data, String, required: false, description: "Base64-encoded image data (e.g., 'data:image/png;base64,iVBORw0KGgo...')"
+      argument :image_filename, String, required: false, description: "Original filename for the image (e.g., 'concert.jpg')"
     end
   end
 end

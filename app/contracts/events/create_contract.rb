@@ -8,11 +8,11 @@ module Events
       required(:place).filled(:string)
       required(:category).filled(:string)
       required(:date).filled
-      optional(:image)
+      optional(:image_data).filled(:string)
+      optional(:image_filename).filled(:string)
     end
 
     rule(:date) do
-      # Convert to Time if it's a string
       time_value = value.is_a?(String) ? Time.parse(value) : value
       key.failure("must be in the future") if time_value && time_value < Time.current
     rescue ArgumentError

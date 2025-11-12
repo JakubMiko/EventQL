@@ -57,6 +57,10 @@ Rails.application.configure do
   # Set host to be used by links generated in mailer templates.
   config.action_mailer.default_url_options = { host: "example.com" }
 
+  # Set default URL options for ActiveStorage and route helpers
+  # TODO: Change to your production domain (e.g., "yourdomain.com")
+  Rails.application.routes.default_url_options = { host: ENV.fetch("APP_HOST", "example.com") }
+
   # Specify outgoing SMTP server. Remember to add smtp/* credentials via rails credentials:edit.
   # config.action_mailer.smtp_settings = {
   #   user_name: Rails.application.credentials.dig(:smtp, :user_name),

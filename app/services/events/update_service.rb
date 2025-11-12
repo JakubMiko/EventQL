@@ -14,8 +14,25 @@ module Events
       result = Events::UpdateContract.new.call(params)
       return Failure(format_errors(result.errors)) unless result.success?
 
-      # Update event
-      event.assign_attributes(result.to_h)
+      validated_params = result.to_h
+
+      # Extract image fields (these are NOT database columns, just GraphQL input)
+      # We must remove them before updating the Event
+      # Note: Try both string and symbol keys since the source might vary
+      image_data = validated_params.delete("image_data") || validated_params.delete(:image_data)
+      image_filename = validated_params.delete("image_filename") || validated_params.delete(:image_filename)
+
+      event.assign_attributes(validated_params)
+
+      if image_data.present?
+        attachment_result = ImageAttachmentService.call(
+          record: event,
+          attachment_name: :image,
+          image_data: image_data,
+          filename: image_filename
+        )
+        return attachment_result if attachment_result.failure?
+      end
 
       if event.save
         Success(event)

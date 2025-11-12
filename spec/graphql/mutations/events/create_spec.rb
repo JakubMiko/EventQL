@@ -9,6 +9,11 @@ RSpec.describe Mutations::Events::Create, type: :request do
     let(:admin_token) { Authentication.encode_token({ user_id: admin.id }) }
     let(:user_token) { Authentication.encode_token({ user_id: regular_user.id }) }
 
+    # A tiny 1x1 pixel PNG image in base64
+    let(:valid_base64_image) do
+      "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg=="
+    end
+
     let(:mutation) do
       <<~GRAPHQL
         mutation CreateEvent($input: CreateEventInput!) {
@@ -215,6 +220,145 @@ RSpec.describe Mutations::Events::Create, type: :request do
         expect {
           post "/graphql", params: { query: mutation, variables: variables }
         }.not_to change(Event, :count)
+      end
+    end
+
+    context "with image upload" do
+      let(:headers) { { "Authorization" => "Bearer #{admin_token}" } }
+
+      let(:mutation_with_image) do
+        <<~GRAPHQL
+          mutation CreateEvent($input: CreateEventInput!) {
+            createEvent(input: $input) {
+              event {
+                id
+                name
+                imageUrl
+              }
+              errors
+            }
+          }
+        GRAPHQL
+      end
+
+      context "with valid base64 image" do
+        let(:variables) do
+          {
+            input: {
+              name: "Photo Event",
+              description: "Event with image",
+              place: "Gallery",
+              date: 1.month.from_now.iso8601,
+              category: "exhibition",
+              imageData: valid_base64_image,
+              imageFilename: "poster.png"
+            }
+          }
+        end
+
+        it "creates event with attached image" do
+          post "/graphql", params: { query: mutation_with_image, variables: variables }, headers: headers
+
+          json = JSON.parse(response.body)
+          data = json["data"]["createEvent"]
+
+          expect(data["event"]).to be_present
+          expect(data["errors"]).to be_empty
+
+          event = Event.last
+          expect(event.image).to be_attached
+          expect(event.image.filename.to_s).to eq("poster.png")
+          expect(event.image.content_type).to eq("image/png")
+        end
+
+        it "returns imageUrl in response" do
+          post "/graphql", params: { query: mutation_with_image, variables: variables }, headers: headers
+
+          json = JSON.parse(response.body)
+          data = json["data"]["createEvent"]
+
+          expect(data["event"]["imageUrl"]).to be_present
+          expect(data["event"]["imageUrl"]).to include("/rails/active_storage/blobs")
+        end
+      end
+
+      context "with image but no filename" do
+        let(:variables) do
+          {
+            input: {
+              name: "Event",
+              description: "Test",
+              place: "Place",
+              date: 1.month.from_now.iso8601,
+              category: "music",
+              imageData: valid_base64_image
+            }
+          }
+        end
+
+        it "generates filename from content type" do
+          post "/graphql", params: { query: mutation_with_image, variables: variables }, headers: headers
+
+          event = Event.last
+          expect(event.image).to be_attached
+          expect(event.image.filename.to_s).to eq("upload.png")
+        end
+      end
+
+      context "with invalid base64 data" do
+        let(:variables) do
+          {
+            input: {
+              name: "Event",
+              description: "Test",
+              place: "Place",
+              date: 1.month.from_now.iso8601,
+              category: "music",
+              imageData: "not-a-valid-base64-image"
+            }
+          }
+        end
+
+        it "returns error and does not create event" do
+          expect {
+            post "/graphql", params: { query: mutation_with_image, variables: variables }, headers: headers
+          }.not_to change(Event, :count)
+
+          json = JSON.parse(response.body)
+          data = json["data"]["createEvent"]
+
+          expect(data["event"]).to be_nil
+          expect(data["errors"]).to be_present
+          expect(data["errors"].first).to include("Invalid image format")
+        end
+      end
+
+      context "without image data" do
+        let(:variables) do
+          {
+            input: {
+              name: "Event",
+              description: "Test",
+              place: "Place",
+              date: 1.month.from_now.iso8601,
+              category: "music"
+            }
+          }
+        end
+
+        it "creates event without image" do
+          post "/graphql", params: { query: mutation_with_image, variables: variables }, headers: headers
+
+          json = JSON.parse(response.body)
+          data = json["data"]["createEvent"]
+
+          expect(data["event"]).to be_present
+          expect(data["event"]["imageUrl"]).to be_nil
+          expect(data["errors"]).to be_empty
+
+          event = Event.last
+          expect(event.image).not_to be_attached
+        end
       end
     end
   end
