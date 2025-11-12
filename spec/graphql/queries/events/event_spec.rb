@@ -67,7 +67,7 @@ RSpec.describe Queries::Events::Event, type: :request do
         expect(data["ticketBatches"]).to be_present
         expect(data["ticketBatches"].length).to eq(1)
         expect(data["ticketBatches"].first["id"]).to eq(ticket_batch.id.to_s)
-        expect(data["ticketBatches"].first["price"]).to eq(50.0)
+        expect(data["ticketBatches"].first["price"]).to eq("50.0")
       end
 
       it "correctly computes past field for upcoming events" do

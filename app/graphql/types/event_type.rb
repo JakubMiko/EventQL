@@ -16,7 +16,7 @@ module Types
     field :image_url, String, null: true, description: "URL of the event image"
 
     # Associations
-    field :ticket_batches, [ Types::TicketBatchType ], null: false, description: "Available ticket batches for this event"
+    field :ticket_batches, resolver: Resolvers::TicketBatchesResolver, description: "Ticket batches for this event"
     field :tickets, [ Types::TicketType ], null: false, description: "All tickets sold for this event"
 
     def past

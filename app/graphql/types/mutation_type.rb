@@ -18,5 +18,10 @@ module Types
     field :create_event, mutation: Mutations::Events::Create
     field :update_event, mutation: Mutations::Events::Update
     field :delete_event, mutation: Mutations::Events::Delete
+
+    # Ticket batch mutations (admin only)
+    field :create_ticket_batch, mutation: Mutations::TicketBatches::Create
+    field :update_ticket_batch, mutation: Mutations::TicketBatches::Update
+    field :delete_ticket_batch, mutation: Mutations::TicketBatches::Delete
   end
 end
