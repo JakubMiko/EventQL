@@ -3,6 +3,7 @@
 module Mutations
   module Users
     class Login < Mutations::BaseMutation
+      graphql_name "LoginPayload"
       description "Login with email and password"
 
       # Arguments - using Input Object Type

@@ -15,18 +15,18 @@ module Types
     field :change_password, mutation: Mutations::Users::ChangePassword
 
     # Event mutations (admin only)
-    field :create_event, mutation: Mutations::Events::Create
-    field :update_event, mutation: Mutations::Events::Update
-    field :delete_event, mutation: Mutations::Events::Delete
+    field :create_event, mutation: Mutations::Events::CreateEvent
+    field :update_event, mutation: Mutations::Events::UpdateEvent
+    field :delete_event, mutation: Mutations::Events::DeleteEvent
 
     # Ticket batch mutations (admin only)
-    field :create_ticket_batch, mutation: Mutations::TicketBatches::Create
-    field :update_ticket_batch, mutation: Mutations::TicketBatches::Update
-    field :delete_ticket_batch, mutation: Mutations::TicketBatches::Delete
+    field :create_ticket_batch, mutation: Mutations::TicketBatches::CreateTicketBatch
+    field :update_ticket_batch, mutation: Mutations::TicketBatches::UpdateTicketBatch
+    field :delete_ticket_batch, mutation: Mutations::TicketBatches::DeleteTicketBatch
 
     # Order mutations
-    field :create_order, mutation: Mutations::Orders::Create
-    field :cancel_order, mutation: Mutations::Orders::Cancel
-    field :pay_order, mutation: Mutations::Orders::Pay
+    field :create_order, mutation: Mutations::Orders::CreateOrder
+    field :cancel_order, mutation: Mutations::Orders::CancelOrder
+    field :pay_order, mutation: Mutations::Orders::PayOrder
   end
 end

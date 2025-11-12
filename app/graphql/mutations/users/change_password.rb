@@ -3,6 +3,7 @@
 module Mutations
   module Users
     class ChangePassword < Mutations::BaseMutation
+      graphql_name "ChangePasswordPayload"
       description "Change password for the currently logged-in user"
 
       # Arguments - using Input Object Type

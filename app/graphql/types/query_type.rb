@@ -29,20 +29,25 @@ module Types
     end
 
     # Event queries
-    field :events, resolver: Queries::Events::Index, description: "Get all events with optional filters (no auth required)"
-    field :event, resolver: Queries::Events::Event, description: "Get full event data by ID (no auth required)"
+    field :events, resolver: Queries::Events::ListEvents, description: "Get all events with optional filters (no auth required)"
+    field :event, resolver: Queries::Events::GetEvent, description: "Get full event data by ID (no auth required)"
 
     # Ticket batch queries
-    field :ticket_batch, resolver: Queries::TicketBatches::Show, description: "Get ticket batch by ID (no auth required)"
+    field :ticket_batch, resolver: Queries::TicketBatches::GetTicketBatch, description: "Get ticket batch by ID (no auth required)"
 
     # User queries
     field :public_user, resolver: Queries::Users::PublicUser, description: "Get public user profile (no auth required)"
     field :current_user, resolver: Queries::Users::CurrentUser, description: "Get current logged-in user (requires auth)"
-    field :user, resolver: Queries::Users::Show, description: "Get full user data by ID (admin only)"
+    field :user, resolver: Queries::Users::GetUser, description: "Get full user data by ID (admin only)"
 
     # Order queries
     field :my_orders, resolver: Queries::Orders::MyOrders, description: "Get current user's orders (requires auth)"
-    field :order, resolver: Queries::Orders::Show, description: "Get order by ID (admin any, user own)"
+    field :order, resolver: Queries::Orders::GetOrder, description: "Get order by ID (admin any, user own)"
     field :all_orders, resolver: Queries::Orders::AllOrders, description: "Get all orders with optional filter (admin only)"
+
+    # Ticket queries
+    field :my_tickets, resolver: Queries::Tickets::MyTickets, description: "Get current user's tickets (requires auth)"
+    field :ticket, resolver: Queries::Tickets::GetTicket, description: "Get ticket by ID (admin any, user own)"
+    field :search_tickets, resolver: Queries::Tickets::SearchTickets, description: "Search tickets with filters (admin only)"
   end
 end

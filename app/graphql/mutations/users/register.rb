@@ -3,6 +3,7 @@
 module Mutations
   module Users
     class Register < Mutations::BaseMutation
+      graphql_name "RegisterPayload"
       description "Register a new user account"
 
       # Arguments - using Input Object Type
