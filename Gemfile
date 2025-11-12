@@ -38,7 +38,7 @@ gem "thruster", require: false
 gem "graphql", "~> 2.3"
 gem "graphql-batch"
 gem "devise"
-gem "devise-jwt" # for GraphQL authentication
+gem "jwt" # For manual JWT token encoding/decoding
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem

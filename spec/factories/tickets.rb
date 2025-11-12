@@ -4,6 +4,6 @@ FactoryBot.define do
     user
     event
     price { 25.0 }
-    ticket_number { Faker::Number.unique.number(digits: 10).to_s }
+    sequence(:ticket_number) { |n| "TICKET-#{n.to_s.rjust(10, '0')}" }
   end
 end

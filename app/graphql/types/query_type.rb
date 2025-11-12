@@ -28,7 +28,9 @@ module Types
       "Hello World!"
     end
 
-    # Public user profile query (no authentication required)
-    field :public_user, resolver: Queries::Users::PublicUser
+    # User queries
+    field :public_user, resolver: Queries::Users::PublicUser, description: "Get public user profile (no auth required)"
+    field :current_user, resolver: Queries::Users::CurrentUser, description: "Get current logged-in user (requires auth)"
+    field :user, resolver: Queries::Users::Show, description: "Get full user data by ID (admin only)"
   end
 end

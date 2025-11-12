@@ -88,7 +88,7 @@ RSpec.describe Queries::Users::PublicUser, type: :request do
         json = JSON.parse(response.body)
         data = json["data"]["publicUser"]
 
-        expect(data.keys).to eq(["email"])
+        expect(data.keys).to eq([ "email" ])
         expect(data["email"]).to eq("john@example.com")
       end
     end

@@ -30,3 +30,7 @@
 
 # Ignore master key for decrypting credentials and more.
 /config/master.key
+
+# Ignore Claude Code documentation
+/CLAUDE.md
+/X-Files/
