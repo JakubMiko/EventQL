@@ -8,7 +8,7 @@ module Authentication
     def encode_token(payload)
       # Add expiration time (24 hours from now)
       payload[:exp] = 24.hours.from_now.to_i
-      JWT.encode(payload, Rails.application.credentials.secret_key_base)
+      JWT.encode(payload, jwt_secret)
     end
 
     # Decode a JWT token
@@ -17,7 +17,7 @@ module Authentication
     def decode_token(token)
       # Third parameter 'true' enables signature verification
       # algorithm: 'HS256' specifies the algorithm and enables expiration check
-      body = JWT.decode(token, Rails.application.credentials.secret_key_base, true, { algorithm: "HS256" })[0]
+      body = JWT.decode(token, jwt_secret, true, { algorithm: "HS256" })[0]
       HashWithIndifferentAccess.new(body)
     rescue JWT::DecodeError, JWT::ExpiredSignature => e
       Rails.logger.info "JWT decode error: #{e.message}"
@@ -34,6 +34,15 @@ module Authentication
       return nil unless decoded
 
       User.find_by(id: decoded[:user_id])
+    end
+
+    private
+
+    # Get JWT secret key
+    # Uses environment variable if available, otherwise falls back to Rails secret
+    # @return [String] The secret key for JWT encoding/decoding
+    def jwt_secret
+      ENV.fetch("JWT_SECRET_KEY") { Rails.application.secret_key_base }
     end
   end
 end

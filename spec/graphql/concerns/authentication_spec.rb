@@ -48,9 +48,10 @@ RSpec.describe Authentication do
 
     it "returns nil for an expired token" do
       # Create a token that expired 1 hour ago
+      secret = ENV.fetch("JWT_SECRET_KEY") { Rails.application.secret_key_base }
       expired_token = JWT.encode(
         { user_id: 1, exp: 1.hour.ago.to_i },
-        Rails.application.credentials.secret_key_base
+        secret
       )
 
       result = Authentication.decode_token(expired_token)
@@ -90,9 +91,10 @@ RSpec.describe Authentication do
     end
 
     it "returns nil for an expired token" do
+      secret = ENV.fetch("JWT_SECRET_KEY") { Rails.application.secret_key_base }
       expired_token = JWT.encode(
         { user_id: user.id, exp: 1.hour.ago.to_i },
-        Rails.application.credentials.secret_key_base
+        secret
       )
 
       result = Authentication.current_user_from_token(expired_token)
