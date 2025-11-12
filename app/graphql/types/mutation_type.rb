@@ -23,5 +23,10 @@ module Types
     field :create_ticket_batch, mutation: Mutations::TicketBatches::Create
     field :update_ticket_batch, mutation: Mutations::TicketBatches::Update
     field :delete_ticket_batch, mutation: Mutations::TicketBatches::Delete
+
+    # Order mutations
+    field :create_order, mutation: Mutations::Orders::Create
+    field :cancel_order, mutation: Mutations::Orders::Cancel
+    field :pay_order, mutation: Mutations::Orders::Pay
   end
 end

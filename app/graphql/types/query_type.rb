@@ -39,5 +39,10 @@ module Types
     field :public_user, resolver: Queries::Users::PublicUser, description: "Get public user profile (no auth required)"
     field :current_user, resolver: Queries::Users::CurrentUser, description: "Get current logged-in user (requires auth)"
     field :user, resolver: Queries::Users::Show, description: "Get full user data by ID (admin only)"
+
+    # Order queries
+    field :my_orders, resolver: Queries::Orders::MyOrders, description: "Get current user's orders (requires auth)"
+    field :order, resolver: Queries::Orders::Show, description: "Get order by ID (admin any, user own)"
+    field :all_orders, resolver: Queries::Orders::AllOrders, description: "Get all orders with optional filter (admin only)"
   end
 end
