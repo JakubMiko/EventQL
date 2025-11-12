@@ -28,6 +28,10 @@ module Types
       "Hello World!"
     end
 
+    # Event queries
+    field :events, resolver: Queries::Events::Index, description: "Get all events with optional filters (no auth required)"
+    field :event, resolver: Queries::Events::Event, description: "Get full event data by ID (no auth required)"
+
     # User queries
     field :public_user, resolver: Queries::Users::PublicUser, description: "Get public user profile (no auth required)"
     field :current_user, resolver: Queries::Users::CurrentUser, description: "Get current logged-in user (requires auth)"

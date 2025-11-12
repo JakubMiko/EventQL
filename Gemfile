@@ -39,6 +39,8 @@ gem "graphql", "~> 2.3"
 gem "graphql-batch"
 gem "devise"
 gem "jwt" # For manual JWT token encoding/decoding
+gem "dry-validation", "~> 1.10"
+gem "dry-monads", "~> 1.6"
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem

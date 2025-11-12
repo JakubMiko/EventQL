@@ -13,5 +13,10 @@ module Types
     field :register, mutation: Mutations::Users::Register
     field :login, mutation: Mutations::Users::Login
     field :change_password, mutation: Mutations::Users::ChangePassword
+
+    # Event mutations (admin only)
+    field :create_event, mutation: Mutations::Events::Create
+    field :update_event, mutation: Mutations::Events::Update
+    field :delete_event, mutation: Mutations::Events::Delete
   end
 end
