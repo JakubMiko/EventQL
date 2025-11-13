@@ -10,10 +10,7 @@ module Resolvers
     def resolve(state:, order:)
       scope = object.ticket_batches
 
-      # Filter by state
       scope = filter_by_state(scope, state)
-
-      # Sort by price
       scope = sort_by_price(scope, order)
 
       scope
