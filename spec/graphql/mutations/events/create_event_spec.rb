@@ -233,7 +233,9 @@ RSpec.describe Mutations::Events::CreateEvent, type: :request do
               event {
                 id
                 name
-                imageUrl
+                description
+                place
+                category
               }
               errors
             }
@@ -269,16 +271,6 @@ RSpec.describe Mutations::Events::CreateEvent, type: :request do
           expect(event.image).to be_attached
           expect(event.image.filename.to_s).to eq("poster.png")
           expect(event.image.content_type).to eq("image/png")
-        end
-
-        it "returns imageUrl in response" do
-          post "/graphql", params: { query: mutation_with_image, variables: variables }, headers: headers
-
-          json = JSON.parse(response.body)
-          data = json["data"]["createEvent"]
-
-          expect(data["event"]["imageUrl"]).to be_present
-          expect(data["event"]["imageUrl"]).to include("/rails/active_storage/blobs")
         end
       end
 
@@ -353,7 +345,6 @@ RSpec.describe Mutations::Events::CreateEvent, type: :request do
           data = json["data"]["createEvent"]
 
           expect(data["event"]).to be_present
-          expect(data["event"]["imageUrl"]).to be_nil
           expect(data["errors"]).to be_empty
 
           event = Event.last
