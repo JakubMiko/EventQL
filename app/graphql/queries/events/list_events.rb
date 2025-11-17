@@ -12,7 +12,7 @@ module Queries
       argument :past, Boolean, required: false, description: "Show only past events"
 
       def resolve(category: nil, upcoming: nil, past: nil)
-        scope = ::Event.limit(100)
+        scope = ::Event.limit(10)
 
         # Apply filters
         scope = scope.where(category: category) if category.present?
