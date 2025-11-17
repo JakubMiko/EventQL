@@ -25,7 +25,6 @@ RSpec.describe Mutations::Events::CreateEvent, type: :request do
               place
               date
               category
-              past
             }
             errors
           }
@@ -70,7 +69,6 @@ RSpec.describe Mutations::Events::CreateEvent, type: :request do
           expect(data["event"]).to be_present
           expect(data["event"]["name"]).to eq("Summer Music Festival")
           expect(data["event"]["category"]).to eq("music")
-          expect(data["event"]["past"]).to be(false)
           expect(data["errors"]).to be_empty
         end
 

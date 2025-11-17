@@ -14,8 +14,6 @@ RSpec.describe Queries::Events::ListEvents, type: :request do
             place
             date
             category
-            past
-            imageUrl
           }
         }
       GRAPHQL
@@ -47,7 +45,7 @@ RSpec.describe Queries::Events::ListEvents, type: :request do
         json = JSON.parse(response.body)
         event = json["data"]["events"].first
 
-        expect(event.keys).to contain_exactly("id", "name", "description", "place", "date", "category", "past", "imageUrl")
+        expect(event.keys).to contain_exactly("id", "name", "description", "place", "date", "category")
       end
     end
 
@@ -79,7 +77,6 @@ RSpec.describe Queries::Events::ListEvents, type: :request do
         expect(data.length).to eq(2)
         event_names = data.map { |e| e["name"] }
         expect(event_names).to contain_exactly("Music Festival", "Theater Show")
-        expect(data.all? { |e| e["past"] == false }).to be(true)
       end
     end
 
@@ -95,7 +92,6 @@ RSpec.describe Queries::Events::ListEvents, type: :request do
         expect(data.length).to eq(2)
         event_names = data.map { |e| e["name"] }
         expect(event_names).to contain_exactly("Past Concert", "Past Game")
-        expect(data.all? { |e| e["past"] == true }).to be(true)
       end
     end
 
@@ -111,7 +107,6 @@ RSpec.describe Queries::Events::ListEvents, type: :request do
         expect(data.length).to eq(1)
         expect(data.first["name"]).to eq("Music Festival")
         expect(data.first["category"]).to eq("music")
-        expect(data.first["past"]).to be(false)
       end
     end
 

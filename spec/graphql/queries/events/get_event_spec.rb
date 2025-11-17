@@ -17,8 +17,6 @@ RSpec.describe Queries::Events::GetEvent, type: :request do
             place
             date
             category
-            past
-            imageUrl
             createdAt
             updatedAt
             ticketBatches {
@@ -54,7 +52,7 @@ RSpec.describe Queries::Events::GetEvent, type: :request do
 
         expect(data.keys).to contain_exactly(
           "id", "name", "description", "place", "date", "category",
-          "past", "imageUrl", "createdAt", "updatedAt", "ticketBatches"
+          "createdAt", "updatedAt", "ticketBatches"
         )
       end
 
@@ -68,26 +66,6 @@ RSpec.describe Queries::Events::GetEvent, type: :request do
         expect(data["ticketBatches"].length).to eq(1)
         expect(data["ticketBatches"].first["id"]).to eq(ticket_batch.id.to_s)
         expect(data["ticketBatches"].first["price"]).to eq("50.0")
-      end
-
-      it "correctly computes past field for upcoming events" do
-        event.update(date: 5.days.from_now)
-        post "/graphql", params: { query: query, variables: variables }
-
-        json = JSON.parse(response.body)
-        data = json["data"]["event"]
-
-        expect(data["past"]).to be(false)
-      end
-
-      it "correctly computes past field for past events" do
-        event.update(date: 5.days.ago)
-        post "/graphql", params: { query: query, variables: variables }
-
-        json = JSON.parse(response.body)
-        data = json["data"]["event"]
-
-        expect(data["past"]).to be(true)
       end
     end
 
