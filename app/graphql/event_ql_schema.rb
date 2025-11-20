@@ -7,6 +7,14 @@ class EventQlSchema < GraphQL::Schema
   # For batch-loading (see https://graphql-ruby.org/dataloader/overview.html)
   use GraphQL::Dataloader
 
+  # Query depth limiting - prevent deeply nested queries (max 10 levels)
+  max_depth 10
+
+  # Query complexity analysis - prevent expensive queries (max 2000)
+  # Higher limit accommodates paginated list queries with nested associations
+  # Example: events(first: 100) with ticketBatches = ~700-1000 complexity
+  max_complexity 2000
+
   # GraphQL-Ruby calls this when something goes wrong while running a query:
   def self.type_error(err, context)
     # if err.is_a?(GraphQL::InvalidNullError)
