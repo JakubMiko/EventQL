@@ -19,7 +19,7 @@ module Types
     end
 
     # Event queries
-    field :events, resolver: Queries::Events::ListEvents, description: "Get all events with optional filters (no auth required)"
+    field :events, resolver: Queries::Events::ListEvents, description: "Get all events with optional filters (no auth required)", max_page_size: 50, default_page_size: 10
     field :event, resolver: Queries::Events::GetEvent, description: "Get full event data by ID (no auth required)"
 
     # Ticket batch queries
