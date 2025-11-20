@@ -31,7 +31,12 @@ class Event < ApplicationRecord
     # Clear all events query caches when an event is created/updated/destroyed
     # This ensures users always see fresh data after any event changes
     begin
+      # Clear events list cache (all variations with filters)
       Rails.cache.delete_matched("events_query:*")
+
+      # Clear single event cache
+      Rails.cache.delete("event:#{id}")
+
       Rails.logger.info("Invalidated events cache for event ID: #{id}")
     rescue => e
       # Log error but don't fail the transaction
