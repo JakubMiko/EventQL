@@ -15,16 +15,18 @@ module Queries
         # Build cache key from query parameters
         cache_key = build_cache_key(category: category, upcoming: upcoming, past: past)
 
-        # Try to fetch from cache, fallback to database on error
-        begin
+        # Cache only IDs (small payload) to avoid deserializing 15K events (~1MB)
+        event_ids = begin
           Rails.cache.fetch(cache_key, expires_in: 5.minutes) do
-            fetch_events(category: category, upcoming: upcoming, past: past)
+            fetch_event_ids(category: category, upcoming: upcoming, past: past)
           end
         rescue => e
-          # Log error and fallback to database
           Rails.logger.error("Redis cache fetch failed: #{e.message}, falling back to database")
-          fetch_events(category: category, upcoming: upcoming, past: past)
+          fetch_event_ids(category: category, upcoming: upcoming, past: past)
         end
+
+        # Fetch fresh records using cached IDs (1 DB query on cache hit - acceptable tradeoff)
+        ::Event.where(id: event_ids).order(date: :desc)
       end
 
       private
@@ -42,7 +44,7 @@ module Queries
         key_parts.join(":")
       end
 
-      def fetch_events(category:, upcoming:, past:)
+      def fetch_event_ids(category:, upcoming:, past:)
         scope = ::Event.all
 
         # Apply filters
@@ -50,9 +52,8 @@ module Queries
         scope = scope.upcoming if upcoming
         scope = scope.past if past
 
-        # Return array of event records to cache (not a relation)
-        # .to_a ensures we cache actual records, resulting in 0 DB queries on cache hit
-        scope.order(date: :desc).to_a
+        # Return only IDs - small array that's fast to cache/deserialize
+        scope.order(date: :desc).pluck(:id)
       end
     end
   end
