@@ -50,12 +50,9 @@ module Queries
         scope = scope.upcoming if upcoming
         scope = scope.past if past
 
-        # Return array of event IDs to cache, then fetch fresh records
-        # This prevents caching stale AR objects
-        event_ids = scope.pluck(:id)
-
-        # Return a scope that can be paginated by GraphQL
-        ::Event.where(id: event_ids).order(date: :desc)
+        # Return array of event records to cache (not a relation)
+        # .to_a ensures we cache actual records, resulting in 0 DB queries on cache hit
+        scope.order(date: :desc).to_a
       end
     end
   end
