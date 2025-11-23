@@ -4,14 +4,14 @@ module Resolvers
   class TicketBatchesResolver < BaseResolver
     type [ Types::TicketBatchType ], null: false
 
-    argument :state, Types::Enums::TicketBatchStateEnum, required: false, default_value: "available", description: "Filter by state"
-    argument :order, Types::Enums::SortOrderEnum, required: false, default_value: "asc", description: "Sort order by price"
+    argument :state, Types::Enums::TicketBatchStateEnum, required: false, default_value: "all", description: "Filter by state"
+    argument :order, Types::Enums::SortOrderEnum, required: false, default_value: "desc", description: "Sort order by sale_start"
 
     def resolve(state:, order:)
       scope = object.ticket_batches
 
       scope = filter_by_state(scope, state)
-      scope = sort_by_price(scope, order)
+      scope = sort_by_sale_start(scope, order)
 
       scope
     end
@@ -37,8 +37,8 @@ module Resolvers
       end
     end
 
-    def sort_by_price(scope, order)
-      order == "desc" ? scope.order(price: :desc) : scope.order(price: :asc)
+    def sort_by_sale_start(scope, order)
+      order == "desc" ? scope.order(sale_start: :desc) : scope.order(sale_start: :asc)
     end
   end
 end

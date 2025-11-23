@@ -111,6 +111,7 @@ RSpec.describe "TicketBatch Queries", type: :request do
               id
               availableTickets
               price
+              saleStart
               state
             }
           }
@@ -204,10 +205,10 @@ RSpec.describe "TicketBatch Queries", type: :request do
         end
       end
 
-      context "without state parameter (defaults to AVAILABLE)" do
+      context "without state parameter (defaults to ALL)" do
         let(:variables) { { id: event.id.to_s } }
 
-        it "returns only available ticket batches" do
+        it "returns all ticket batches" do
           post "/graphql",
             params: { query: query, variables: variables }.to_json,
             headers: { "Content-Type" => "application/json" }
@@ -215,69 +216,69 @@ RSpec.describe "TicketBatch Queries", type: :request do
           json = JSON.parse(response.body)
           batches = json["data"]["event"]["ticketBatches"]
 
-          expect(batches.length).to eq(1)
-          expect(batches.first["state"]).to eq("available")
+          # Initial ticket_batch + 4 created in this context
+          expect(batches.length).to eq(5)
         end
       end
     end
 
     context "sorting by order" do
-      let!(:batch_30) do
+      let!(:batch_early) do
         create(:ticket_batch,
           event: event,
           price: 30.00,
           available_tickets: 100,
-          sale_start: 1.hour.ago,
+          sale_start: 3.days.ago,
           sale_end: 1.week.from_now)
       end
 
-      let!(:batch_20) do
+      let!(:batch_middle) do
         create(:ticket_batch,
           event: event,
           price: 20.00,
           available_tickets: 100,
-          sale_start: 1.hour.ago,
+          sale_start: 2.days.ago,
           sale_end: 1.week.from_now)
       end
 
-      let!(:batch_40) do
+      let!(:batch_recent) do
         create(:ticket_batch,
           event: event,
           price: 40.00,
           available_tickets: 100,
-          sale_start: 1.hour.ago,
+          sale_start: 1.day.ago,
           sale_end: 1.week.from_now)
       end
 
       context "with order: ASC" do
         let(:variables) { { id: event.id.to_s, state: "ALL", order: "ASC" } }
 
-        it "returns batches sorted by price ascending" do
+        it "returns batches sorted by sale_start ascending" do
           post "/graphql",
             params: { query: query, variables: variables }.to_json,
             headers: { "Content-Type" => "application/json" }
 
           json = JSON.parse(response.body)
           batches = json["data"]["event"]["ticketBatches"]
-          prices = batches.map { |b| b["price"].to_f }
+          sale_starts = batches.map { |b| Time.zone.parse(b["saleStart"]) }
 
-          expect(prices).to eq(prices.sort)
+          expect(sale_starts).to eq(sale_starts.sort)
         end
       end
 
       context "with order: DESC" do
         let(:variables) { { id: event.id.to_s, state: "ALL", order: "DESC" } }
 
-        it "returns batches sorted by price descending" do
+        it "returns batches sorted by sale_start descending" do
           post "/graphql",
             params: { query: query, variables: variables }.to_json,
             headers: { "Content-Type" => "application/json" }
 
           json = JSON.parse(response.body)
           batches = json["data"]["event"]["ticketBatches"]
-          prices = batches.map { |b| b["price"].to_f }
+          sale_starts = batches.map { |b| Time.zone.parse(b["saleStart"]) }
 
-          expect(prices).to eq(prices.sort.reverse)
+          expect(sale_starts).to eq(sale_starts.sort.reverse)
         end
       end
     end
