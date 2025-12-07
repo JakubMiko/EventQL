@@ -31,7 +31,7 @@ module Types
     field :user, resolver: Queries::Users::GetUser, description: "Get full user data by ID (admin only)"
 
     # Order queries
-    field :my_orders, resolver: Queries::Orders::MyOrders, description: "Get current user's orders (requires auth)"
+    field :my_orders, resolver: Queries::Orders::MyOrders, connection: true, description: "Get current user's orders with pagination (requires auth)", max_page_size: 100, default_page_size: 20
     field :order, resolver: Queries::Orders::GetOrder, description: "Get order by ID (admin any, user own)"
     field :all_orders, resolver: Queries::Orders::AllOrders, description: "Get all orders with optional filter (admin only)"
 

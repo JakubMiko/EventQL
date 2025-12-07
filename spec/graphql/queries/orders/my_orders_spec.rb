@@ -20,19 +20,31 @@ RSpec.describe Queries::Orders::MyOrders, type: :request do
       <<~GRAPHQL
         query {
           myOrders {
-            id
-            quantity
-            totalPrice
-            status
-            user {
-              id
+            edges {
+              node {
+                id
+                quantity
+                totalPrice
+                status
+                user {
+                  id
+                }
+                ticketBatch {
+                  id
+                }
+                tickets {
+                  id
+                }
+              }
+              cursor
             }
-            ticketBatch {
-              id
+            pageInfo {
+              hasNextPage
+              hasPreviousPage
+              startCursor
+              endCursor
             }
-            tickets {
-              id
-            }
+            totalCount
           }
         }
       GRAPHQL
@@ -45,8 +57,10 @@ RSpec.describe Queries::Orders::MyOrders, type: :request do
              headers: { "Authorization" => "Bearer #{token}", "Content-Type" => "application/json" }
 
         json = JSON.parse(response.body)
-        orders = json["data"]["myOrders"]
+        data = json["data"]["myOrders"]
+        orders = data["edges"].map { |edge| edge["node"] }
 
+        expect(data["totalCount"]).to eq(3)
         expect(orders.length).to eq(3)
         orders.each do |order|
           expect(order["user"]["id"]).to eq(user.id.to_s)
@@ -62,7 +76,8 @@ RSpec.describe Queries::Orders::MyOrders, type: :request do
              headers: { "Authorization" => "Bearer #{token}", "Content-Type" => "application/json" }
 
         json = JSON.parse(response.body)
-        orders = json["data"]["myOrders"]
+        data = json["data"]["myOrders"]
+        orders = data["edges"].map { |edge| edge["node"] }
 
         expect(orders.first["id"]).to eq(newest_order.id.to_s)
       end
@@ -73,7 +88,8 @@ RSpec.describe Queries::Orders::MyOrders, type: :request do
              headers: { "Authorization" => "Bearer #{token}", "Content-Type" => "application/json" }
 
         json = JSON.parse(response.body)
-        orders = json["data"]["myOrders"]
+        data = json["data"]["myOrders"]
+        orders = data["edges"].map { |edge| edge["node"] }
 
         orders.each do |order|
           expect(order["ticketBatch"]).to be_present
@@ -91,7 +107,8 @@ RSpec.describe Queries::Orders::MyOrders, type: :request do
              headers: { "Authorization" => "Bearer #{token}", "Content-Type" => "application/json" }
 
         json = JSON.parse(response.body)
-        orders = json["data"]["myOrders"]
+        data = json["data"]["myOrders"]
+        orders = data["edges"].map { |edge| edge["node"] }
 
         order_data = orders.find { |o| o["id"] == order_with_tickets.id.to_s }
         expect(order_data["tickets"].length).to eq(2)
@@ -105,9 +122,162 @@ RSpec.describe Queries::Orders::MyOrders, type: :request do
              headers: { "Authorization" => "Bearer #{token}", "Content-Type" => "application/json" }
 
         json = JSON.parse(response.body)
-        orders = json["data"]["myOrders"]
+        data = json["data"]["myOrders"]
 
-        expect(orders).to eq([])
+        expect(data["edges"]).to eq([])
+        expect(data["totalCount"]).to eq(0)
+      end
+    end
+
+    context "pagination" do
+      let!(:pagination_user) { create(:user) }
+      let!(:pagination_event) { create(:event) }
+      let!(:pagination_ticket_batch) { create(:ticket_batch, event: pagination_event) }
+      let(:pagination_token) { Authentication.encode_token({ user_id: pagination_user.id }) }
+
+      before do
+        # Create 25 orders to test pagination
+        create_list(:order, 25, user: pagination_user, ticket_batch: pagination_ticket_batch)
+      end
+
+      it "returns default page size of 20 orders" do
+        query = <<~GRAPHQL
+          query {
+            myOrders {
+              edges {
+                node {
+                  id
+                }
+              }
+              totalCount
+              pageInfo {
+                hasNextPage
+                hasPreviousPage
+              }
+            }
+          }
+        GRAPHQL
+
+        post "/graphql",
+             params: { query: query }.to_json,
+             headers: { "Authorization" => "Bearer #{pagination_token}", "Content-Type" => "application/json" }
+
+        json = JSON.parse(response.body)
+        data = json["data"]["myOrders"]
+
+        expect(data["edges"].length).to eq(20)
+        expect(data["totalCount"]).to eq(25)
+        expect(data["pageInfo"]["hasNextPage"]).to eq(true)
+        expect(data["pageInfo"]["hasPreviousPage"]).to eq(false)
+      end
+
+      it "supports custom page size with first argument" do
+        query = <<~GRAPHQL
+          query {
+            myOrders(first: 10) {
+              edges {
+                node {
+                  id
+                }
+              }
+              totalCount
+              pageInfo {
+                hasNextPage
+              }
+            }
+          }
+        GRAPHQL
+
+        post "/graphql",
+             params: { query: query }.to_json,
+             headers: { "Authorization" => "Bearer #{pagination_token}", "Content-Type" => "application/json" }
+
+        json = JSON.parse(response.body)
+        data = json["data"]["myOrders"]
+
+        expect(data["edges"].length).to eq(10)
+        expect(data["totalCount"]).to eq(25)
+        expect(data["pageInfo"]["hasNextPage"]).to eq(true)
+      end
+
+      it "supports cursor-based pagination with after argument" do
+        # First request to get the cursor
+        first_query = <<~GRAPHQL
+          query {
+            myOrders(first: 10) {
+              edges {
+                cursor
+                node {
+                  id
+                }
+              }
+              pageInfo {
+                endCursor
+                hasNextPage
+              }
+            }
+          }
+        GRAPHQL
+
+        post "/graphql",
+             params: { query: first_query }.to_json,
+             headers: { "Authorization" => "Bearer #{pagination_token}", "Content-Type" => "application/json" }
+
+        json = JSON.parse(response.body)
+        data = json["data"]["myOrders"]
+        end_cursor = data["pageInfo"]["endCursor"]
+        first_page_last_id = data["edges"].last["node"]["id"]
+
+        # Second request with after cursor
+        second_query = <<~GRAPHQL
+          query {
+            myOrders(first: 10, after: "#{end_cursor}") {
+              edges {
+                node {
+                  id
+                }
+              }
+              pageInfo {
+                hasPreviousPage
+                hasNextPage
+              }
+            }
+          }
+        GRAPHQL
+
+        post "/graphql",
+             params: { query: second_query }.to_json,
+             headers: { "Authorization" => "Bearer #{pagination_token}", "Content-Type" => "application/json" }
+
+        json = JSON.parse(response.body)
+        data = json["data"]["myOrders"]
+
+        expect(data["edges"].length).to eq(10)
+        expect(data["edges"].first["node"]["id"]).not_to eq(first_page_last_id)
+        expect(data["pageInfo"]["hasPreviousPage"]).to eq(true)
+        expect(data["pageInfo"]["hasNextPage"]).to eq(true)
+      end
+
+      it "respects max page size of 100" do
+        query = <<~GRAPHQL
+          query {
+            myOrders(first: 150) {
+              edges {
+                node {
+                  id
+                }
+              }
+            }
+          }
+        GRAPHQL
+
+        post "/graphql",
+             params: { query: query }.to_json,
+             headers: { "Authorization" => "Bearer #{pagination_token}", "Content-Type" => "application/json" }
+
+        json = JSON.parse(response.body)
+        # GraphQL should limit to max_page_size of 100
+        expect(json["data"]["myOrders"]["edges"].length).to be <= 100
       end
     end
 

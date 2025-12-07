@@ -3,9 +3,9 @@
 module Queries
   module Orders
     class MyOrders < Queries::BaseQuery
-      description "Get all orders for the current authenticated user"
+      description "Get all orders for the current authenticated user with pagination"
 
-      type [ Types::OrderType ], null: false
+      type Types::OrderConnectionType, null: false
 
       def resolve
         require_authentication!
