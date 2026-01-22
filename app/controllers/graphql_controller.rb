@@ -14,25 +14,7 @@ class GraphqlController < ApplicationController
       current_user: current_user
     }
 
-    # Only cache read queries (not mutations) for anonymous users
-    is_mutation = query.to_s.strip.start_with?("mutation")
-
-    if is_mutation || current_user.present?
-      # Don't cache mutations or authenticated requests
-      result = EventQlSchema.execute(query, variables: variables, context: context, operation_name: operation_name)
-    else
-      # Cache read queries for anonymous users
-      cache_key = build_cache_key(query, variables, operation_name)
-
-      result = begin
-        Rails.cache.fetch(cache_key, expires_in: 5.minutes) do
-          EventQlSchema.execute(query, variables: variables, context: context, operation_name: operation_name).to_h
-        end
-      rescue => e
-        Rails.logger.error("GraphQL cache error: #{e.message}")
-        EventQlSchema.execute(query, variables: variables, context: context, operation_name: operation_name)
-      end
-    end
+    result = EventQlSchema.execute(query, variables: variables, context: context, operation_name: operation_name)
 
     render json: result
   rescue StandardError => e
@@ -41,21 +23,6 @@ class GraphqlController < ApplicationController
   end
 
   private
-
-  def build_cache_key(query, variables, operation_name)
-    # Normalize query (remove extra whitespace) for consistent cache keys
-    normalized_query = query.to_s.gsub(/\s+/, " ").strip
-
-    key_parts = [
-      "graphql_response",
-      "v1",
-      Digest::MD5.hexdigest(normalized_query),
-      Digest::MD5.hexdigest(variables.to_json),
-      operation_name
-    ].compact
-
-    key_parts.join(":")
-  end
 
   # Handle variables in form data, JSON body, or a blank value
   def prepare_variables(variables_param)
